@@ -4,16 +4,42 @@
   "description": "Tamagotchi de pixel art que vive do seu uso do Claude Code.",
   "type": "module",
   "license": "MIT",
+  "author": "Guilherme Amaral",
+  "homepage": "https://github.com/GuiAmaral85/tama-clod",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GuiAmaral85/tama-clod.git"
+  },
+  "keywords": [
+    "tamagotchi",
+    "claude-code",
+    "pixel-art",
+    "cli",
+    "react",
+    "vite"
+  ],
+  "bin": {
+    "tama-clod": "bin/tama-clod.mjs"
+  },
+  "files": [
+    "dist",
+    "web/dist",
+    "bin"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "dev": "concurrently -n server,web -c magenta,cyan \"tsx watch server/server.ts\" \"vite web\"",
-    "build": "vite build web",
-    "start": "tsx server/server.ts",
-    "typecheck": "tsc -p web/tsconfig.json && tsc -p tsconfig.json"
+    "build": "npm run build:web && npm run build:server",
+    "build:web": "vite build web",
+    "build:server": "esbuild server/server.ts --bundle --platform=node --format=esm --target=node18 --packages=external --outfile=dist/server.mjs",
+    "start": "node dist/server.mjs",
+    "typecheck": "tsc -p web/tsconfig.json && tsc -p tsconfig.json",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "chokidar": "^3.6.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "chokidar": "^3.6.0"
   },
   "devDependencies": {
     "@types/node": "^20.14.0",
@@ -21,6 +47,9 @@
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
     "concurrently": "^9.0.0",
+    "esbuild": "^0.25.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "tsx": "^4.16.0",
     "typescript": "^5.5.0",
     "vite": "^5.4.0"

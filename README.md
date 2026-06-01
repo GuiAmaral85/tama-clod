@@ -23,27 +23,32 @@ Você abre no navegador e acompanha ao vivo. Nada sai da sua máquina.
 - **Node 18+** (você provavelmente já tem, vem com o Claude Code)
 - Claude Code instalado e já usado pelo menos uma vez
 
-## Instalação
+## Rodando (1 comando)
+
+```bash
+npx tama-clod
+```
+
+Sobe um servidor local e **abre o navegador sozinho**. Deixe a aba aberta
+enquanto usa o Claude Code e veja o bicho reagir. É só isso — sem clonar,
+sem instalar nada permanente.
+
+> A porta padrão é a 4321; mude com `PORT=8080 npx tama-clod` se precisar.
+
+## Rodando a partir do código (dev / contribuição)
 
 ```bash
 git clone https://github.com/GuiAmaral85/tama-clod.git
 cd tama-clod
 npm install
-```
 
-## Rodando
-
-```bash
 # desenvolvimento (hot reload)
-npm run dev
+npm run dev          # abra http://localhost:5173
 
-# ou produção
+# ou produção (compila e serve tudo pelo Node)
 npm run build
-npm start
+npm start            # abra http://localhost:4321
 ```
-
-Abra **http://localhost:4321** no navegador (a porta aparece no terminal).
-Deixe a aba aberta enquanto usa o Claude Code e veja o bicho reagir.
 
 ## Configuração
 
