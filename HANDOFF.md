@@ -1,109 +1,91 @@
-# TAMA CLOD — Handoff (server local + navegador)
+# TAMA CLOD — Architecture & developer notes
 
-Pixel-art Tamagotchi da mascote do Claude Code. Cresce com o uso do Claude
-Code; energia cai quando você queima a cota de tokens; fica faminto se você
-some. **Todo usuário começa do ovo na instalação** (uso anterior não conta).
+Pixel-art Tamagotchi of the Claude Code mascot. It grows with Claude Code
+usage; energy drops as you burn your token-window quota; it gets hungry when
+you go idle. **Every user starts from the egg at install time** (prior usage
+doesn't count).
 
-MVP open-source pra rodar local: `npm install`, `npm run dev`, abrir no navegador.
+Open-source MVP that runs locally. End users just run `npx tama-clod`;
+contributors clone and run `npm run dev`.
 
-## Arquitetura
+## Architecture
 
-Navegador **não** acessa arquivos locais (sandbox). Então um **servidor Node**
-faz o trabalho pesado e a página só renderiza:
+The browser **can't** read local files (sandbox), so a **Node server** does the
+heavy lifting and the page only renders:
 
 ```
 ~/.claude/projects/*.jsonl
-        │  (Node lê + parseia + calcula)
+        │  (Node reads + parses + computes)
         ▼
-   servidor Node  ──(SSE: estado pronto)──►  página React (renderiza o bicho)
+   Node server  ──(SSE: ready state)──►  React page (renders the creature)
         │
-   ~/.tamaclod/state.json   (guarda installedAt + idioma)
+   ~/.tamaclod/state.json   (stores installedAt + language)
 ```
 
-- **Backend**: Node + TypeScript via `tsx` (sem build no backend).
-- **Frontend**: Vite + React + TS (porta direta do protótipo `tama-clod.jsx`).
-- **Watch**: `chokidar` na pasta de projetos (fallback: repolling a cada ~5s).
-- **Tempo real**: **SSE** (Server-Sent Events) — servidor→cliente, sem libs de socket.
-- Dependências mínimas: `chokidar` (+ `tsx`, `vite`, `react` no front).
+- **Backend**: Node + TypeScript. In dev it runs via `tsx`; for distribution
+  it's bundled to plain ESM with esbuild (`dist/server.mjs`).
+- **Frontend**: Vite + React + TS. The fonts (Press Start 2P, VT323) are
+  embedded locally — no Google Fonts.
+- **Watch**: `chokidar` on the projects folder (fallback: re-poll every ~5s).
+- **Real-time**: **SSE** (Server-Sent Events) — server→client, no socket libs.
+- **Runtime dependency**: just `chokidar` (React/Vite/tsx/esbuild are dev-only).
 
-## Estrutura de pastas sugerida
+## Folder structure
 
 ```
 tama-clod/
-├─ core/                 # lógica pura (já pronta e testada)
-│  ├─ config.ts          # tunables (limiares, teto de energia, fome)
-│  ├─ usage.ts           # parser tolerante do JSONL (texto → eventos)
+├─ core/                 # pure logic
+│  ├─ config.ts          # tunables (thresholds, energy cap, hunger)
+│  ├─ usage.ts           # tolerant JSONL parser (text → events)
 │  ├─ engine.ts          # computeState(events, installedAt, now)
-│  └─ collect.ts         # Node: lê ~/.claude/projects/** → eventos
+│  └─ collect.ts         # Node: reads ~/.claude/projects/** → events
 ├─ server/
-│  └─ server.ts          # A CONSTRUIR: SSE + estáticos + watch + state.json
-├─ web/                  # app Vite/React (base: tama-clod.tsx)
+│  └─ server.ts          # SSE + static files + watch + state.json
+├─ web/                  # Vite/React app
 │  └─ src/App.tsx
+├─ bin/
+│  └─ tama-clod.mjs      # `npx tama-clod` entry: starts the server, opens browser
 ├─ package.json
 ├─ HANDOFF.md
 └─ README.md
 ```
 
-## O que JÁ está pronto (neste pacote)
+## HTTP endpoints (`server/server.ts`)
 
-`core/config.ts`, `core/usage.ts`, `core/engine.ts`, `core/collect.ts` — testados.
-`computeState` devolve `{ stage, isEgg, growthTokens, energy, hunger, ... }`.
+- `GET /api/state` → current state as JSON (initial snapshot).
+- `GET /api/stream` → **SSE**: pushes the state on every change (`data: {json}\n\n`).
+- `POST /api/reset` → rewrites `installedAt = now` ("new creature").
+- `POST /api/lang` → persists the language choice in `state.json`.
+- Anything else → static files from `web/dist` (production).
 
-## O que CONSTRUIR
+Uses only Node's native `http` module — no Express. Binds to `127.0.0.1` (IPv4
+loopback) to keep everything on your machine and avoid the `localhost`
+IPv6/IPv4 mismatch.
 
-### 1. `server/server.ts` (Node)
-- No boot: ler `~/.tamaclod/state.json`; se não houver `installedAt`, gravar `Date.now()`.
-- `recompute()`: `await collectEvents()` → `computeState(events, installedAt)` → guarda o último estado.
-- `chokidar.watch(claudeProjectsDir())` com debounce (~300ms) chama `recompute()` e faz broadcast.
-- Servir os estáticos do `web/dist` (produção) ou proxiar o Vite (dev).
-- Endpoints:
-  - `GET /api/state` → JSON do estado atual (snapshot inicial).
-  - `GET /api/stream` → **SSE**: manda o estado a cada mudança (`data: {json}\n\n`).
-  - `POST /api/reset` (opcional) → reescreve `installedAt = now` ("novo bicho").
-- Pode usar só o módulo `http` nativo; não precisa de Express.
+## Frontend (`web/src/App.tsx`)
 
-### 2. Frontend (`web/src/App.tsx`, baseado no `tama-clod.tsx`)
-- Trocar os 3 sliders por estado vindo do servidor:
-  ```ts
-  const [s, setS] = useState(null);
-  useEffect(() => {
-    fetch("/api/state").then(r => r.json()).then(setS);
-    const es = new EventSource("/api/stream");
-    es.onmessage = (e) => setS(JSON.parse(e.data));
-    return () => es.close();
-  }, []);
-  ```
-- Mapear `{stage, energy, hunger}` → visual com a função `buildLive` que já existe.
-- Manter a galeria de estados. Sugestão: manter os sliders atrás de um toggle "Demo".
-- Idioma PT/EN continua igual; persistir a escolha no `state.json` via um pequeno
-  `POST /api/lang` (ou só no localStorage do front — mais simples pro MVP).
-- Embutir as fontes `Press Start 2P` e `VT323` localmente (sem Google Fonts).
+- State comes from the server (initial `fetch /api/state` + live `EventSource
+  /api/stream`); `{ stage, energy, hunger }` maps to the visuals through the
+  `buildLive` function.
+- The state gallery is always visible; manual sliders live behind a "Demo"
+  toggle.
+- PT/EN toggle, default EN, persisted in `localStorage`.
 
-### 3. `package.json` (scripts sugeridos)
-```jsonc
-{
-  "type": "module",
-  "scripts": {
-    "dev": "concurrently \"vite --root web\" \"tsx watch server/server.ts\"",
-    "build": "vite build --root web",
-    "start": "tsx server/server.ts"   // serve web/dist + SSE
-  },
-  "dependencies": { "chokidar": "^3" },
-  "devDependencies": { "tsx": "^4", "concurrently": "^9", "vite": "^5", "typescript": "^5" }
-}
-```
+## Rules (`core/engine.ts`)
 
-## Regras (no `core/engine.ts`)
-- **Estágio** = soma de `input+output+cache_creation` de eventos com `ts >= installedAt`.
-  Monotônico (nunca regride). `cache_read` ignorado no crescimento.
-- **Energia** = `100 * (1 − tokensNaJanela5h / energyCapTokens)`. Recarrega sozinho.
-- **Fome** = `100 * (tempoDesdeÚltimaAtividade / hungerFullMs)`.
+- **Stage** = sum of `input + output + cache_creation` for events with
+  `ts >= installedAt`. Monotonic (never regresses). `cache_read` is ignored for
+  growth.
+- **Energy** = `100 * (1 − tokensInWindow5h / energyCapTokens)`. Recharges on
+  its own.
+- **Hunger** = `100 * (timeSinceLastActivity / hungerFullMs)`.
 
-## Caveats honestos
-- O **limite real do plano é server-side**, não está nos logs. `energyCapTokens` é
-  um teto configurável/estimado — exponha como ajuste do usuário.
-- **Schema do JSONL varia** entre versões; `usage.ts` é tolerante, mas valide com
-  seus arquivos reais.
-- **Performance**: reler tudo a cada mudança é ok no MVP; depois, leitura
-  incremental (guardar tamanho/última posição por arquivo).
-- Multiplataforma: `os.homedir()` resolve o `~` no Win/Mac/Linux.
+## Honest caveats
+
+- The **plan's real limit is server-side** and isn't in the logs.
+  `energyCapTokens` is a configurable/estimated cap — exposed as a user tunable.
+- **The JSONL schema varies** across Claude Code versions; `usage.ts` is
+  tolerant, but validate against your real files.
+- **Performance**: re-reading everything on each change is fine for the MVP;
+  later, do incremental reads (track size/last offset per file).
+- Cross-platform: `os.homedir()` resolves `~` on Windows/macOS/Linux.

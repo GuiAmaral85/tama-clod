@@ -1,77 +1,78 @@
 # 🥚 TAMA CLOD
 
-Um Tamagotchi de pixel art que vive do seu uso do **Claude Code**. Quanto mais
-você programa com o Claude Code, mais o bichinho cresce. Mas cuidado: se você
-queimar toda a cota de tokens da janela, ele fica fraco — e se você sumir por
-dias, ele passa fome. O equilíbrio é o jogo.
+A pixel-art Tamagotchi that lives off your **Claude Code** usage. The more you
+code with Claude Code, the more the little creature grows. But be careful: burn
+through your whole token-window quota and it gets weak — disappear for days and
+it goes hungry. The balance is the game.
 
-> Todo mundo começa do **ovo**: o uso anterior à instalação não conta. Você
-> cria o seu TAMA CLOD do zero.
+> Everyone starts from the **egg**: usage before installation doesn't count.
+> You raise your own TAMA CLOD from scratch.
 
-## Como funciona
+## How it works
 
-Um servidor local em Node lê os logs de sessão do Claude Code
-(`~/.claude/projects/*.jsonl`), calcula o estado do bicho e serve uma página.
-Você abre no navegador e acompanha ao vivo. Nada sai da sua máquina.
+A local Node server reads Claude Code's session logs
+(`~/.claude/projects/*.jsonl`), computes the creature's state, and serves a
+page. You open it in the browser and watch it live. Nothing leaves your machine.
 
-- **Estágio** (cresce de vez): tokens acumulados desde que você instalou.
-- **Energia** (recarrega): quanto da cota da janela de 5h ainda sobra.
-- **Fome**: tempo desde a sua última sessão.
+- **Stage** (grows permanently): tokens accumulated since you installed.
+- **Energy** (recharges): how much of your 5-hour window quota is left.
+- **Hunger**: time since your last session.
 
-## Requisitos
+## Requirements
 
-- **Node 18+** (você provavelmente já tem, vem com o Claude Code)
-- Claude Code instalado e já usado pelo menos uma vez
+- **Node 18+** (you probably already have it — it ships with Claude Code)
+- Claude Code installed and used at least once
 
-## Rodando (1 comando)
+## Run it (one command)
 
 ```bash
 npx tama-clod
 ```
 
-Sobe um servidor local e **abre o navegador sozinho**. Deixe a aba aberta
-enquanto usa o Claude Code e veja o bicho reagir. É só isso — sem clonar,
-sem instalar nada permanente.
+Starts a local server and **opens your browser automatically**. Keep the tab
+open while you use Claude Code and watch the creature react. That's it — no
+clone, nothing installed permanently.
 
-> A porta padrão é a 4321; mude com `PORT=8080 npx tama-clod` se precisar.
+> Default port is 4321; change it with `PORT=8080 npx tama-clod` if needed.
 
-## Rodando a partir do código (dev / contribuição)
+## Run from source (dev / contributing)
 
 ```bash
 git clone https://github.com/GuiAmaral85/tama-clod.git
 cd tama-clod
 npm install
 
-# desenvolvimento (hot reload)
-npm run dev          # abra http://localhost:5173
+# development (hot reload)
+npm run dev          # open http://localhost:5173
 
-# ou produção (compila e serve tudo pelo Node)
+# or production (build and serve everything from Node)
 npm run build
-npm start            # abra http://localhost:4321
+npm start            # open http://localhost:4321
 ```
 
-## Configuração
+## Configuration
 
-Os números de crescimento, o teto de energia e o tempo de fome ficam em
-`core/config.ts`. Comece com os padrões e ajuste ao seu ritmo de uso:
+The growth numbers, the energy cap, and the hunger timer live in
+`core/config.ts`. Start with the defaults and tune them to your pace:
 
 ```ts
-energyCapTokens: 1_000_000,   // teto da janela (NÃO é o limite oficial do plano)
-hungerFullMs: 24 * HOUR,      // faminto após 1 dia parado
-stageThresholds: [ ... ]      // tokens acumulados por estágio
+energyCapTokens: 1_000_000,   // window cap (NOT your plan's official limit)
+hungerFullMs: 24 * HOUR,      // starving after 1 idle day
+stageThresholds: [ ... ]      // accumulated tokens per stage
 ```
 
-> ⚠️ O limite real do seu plano é definido no servidor da Anthropic e não fica
-> nos logs. A "energia" é uma estimativa contra um teto que você configura.
+> ⚠️ Your plan's real limit is enforced server-side by Anthropic and isn't in
+> the logs. "Energy" is an estimate against a cap that you configure.
 
-## Idiomas
+## Languages
 
-Botão **PT / EN** no canto superior — português (BR) e inglês (US).
+A **PT / EN** toggle in the top corner — Portuguese (BR) and English (US).
+Defaults to English.
 
 ## Status
 
-MVP. Roda local, código aberto. Contribuições bem-vindas.
+MVP. Runs locally, open source. Contributions welcome.
 
-## Licença
+## License
 
 [MIT](LICENSE) © Guilherme Amaral.
