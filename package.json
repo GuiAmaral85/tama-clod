@@ -1,7 +1,7 @@
 {
   "name": "tama-clod",
   "version": "0.1.0",
-  "description": "Tamagotchi de pixel art que vive do seu uso do Claude Code.",
+  "description": "A pixel-art Tamagotchi that lives off your Claude Code usage.",
   "type": "module",
   "license": "MIT",
   "author": "Guilherme Amaral",
