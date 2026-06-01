@@ -16,7 +16,7 @@ import http from "node:http";
 import { readFile, writeFile, mkdir, stat } from "node:fs/promises";
 import { createReadStream, existsSync } from "node:fs";
 import { join, extname, dirname, resolve, normalize } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import os from "node:os";
 
 import chokidar from "chokidar";
@@ -265,7 +265,7 @@ function startWatcher(): void {
   console.log(`[tamaclod] vigiando ${dir}`);
 }
 
-async function main(): Promise<void> {
+export async function start(): Promise<{ url: string }> {
   appState = await loadOrInitState();
 
   // Sobe o HTTP PRIMEIRO, pra página carregar na hora. O cálculo do estado e o
@@ -298,9 +298,15 @@ async function main(): Promise<void> {
   } catch (err) {
     console.error("[tamaclod] watcher não iniciou (seguindo só com repolling):", err);
   }
+
+  return { url: `http://localhost:${PORT}` };
 }
 
-main().catch((err) => {
-  console.error("[tamaclod] falha no boot:", err);
-  process.exit(1);
-});
+// Auto-executa quando rodado direto (`npm start` / `node dist/server.mjs`),
+// mas NÃO quando importado — o bin do npx importa start() e abre o navegador.
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  start().catch((err) => {
+    console.error("[tamaclod] falha no boot:", err);
+    process.exit(1);
+  });
+}
