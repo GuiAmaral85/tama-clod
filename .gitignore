@@ -1,0 +1,27 @@
+# deps
+node_modules/
+
+# build output
+web/dist/
+dist/
+
+# logs / debug
+*.log
+npm-debug.log*
+
+# env
+.env
+.env.*
+
+# editor / OS
+.DS_Store
+.vscode/
+.idea/
+
+# config local do Claude Code (permissões da máquina)
+.claude/
+
+# arquivos temporários do Vite
+*.timestamp-*.mjs
+
+# o estado do bicho fica em ~/.tamaclod/state.json (fora do repo)
