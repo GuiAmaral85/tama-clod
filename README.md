@@ -60,6 +60,9 @@ shows the pet in a native popover.
 
 The app is intentionally a local prototype for now. It does not install a login
 item, does not ship a signed release build, and does not send data anywhere.
+On macOS versions that support Liquid Glass, the popover uses native glass
+surfaces and glass button styles. Earlier macOS versions fall back to adaptive
+system materials.
 
 ### macOS requirements
 
@@ -134,7 +137,8 @@ The Swift package has two targets:
   mapping, milestone detection, formatting, repo-root resolution, and Node
   helper lifecycle.
 - `TamaClodMenuBar`: AppKit + SwiftUI app target with `NSStatusItem`,
-  `NSPopover`, native pixel-art rendering, settings, and notification delivery.
+  `NSPopover`, native pixel-art rendering, Liquid Glass popover surfaces,
+  settings, and notification delivery.
 
 ### Troubleshooting
 

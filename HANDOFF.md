@@ -86,7 +86,9 @@ IPv6/IPv4 mismatch.
   helper launcher.
 - `TamaClodMenuBar` owns AppKit/SwiftUI lifecycle: accessory activation policy,
   `NSStatusItem`, `NSPopover`, UserNotifications fallback, and the native
-  Canvas-based pixel pet.
+  Canvas-based pixel pet. On macOS versions that support Liquid Glass, the
+  popover wraps related glass surfaces in one `GlassEffectContainer` and falls
+  back to adaptive system materials on older systems.
 - Notification modes are persisted in `UserDefaults`: animated popover by
   default, or standard macOS notifications when authorized.
 
