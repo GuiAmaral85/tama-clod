@@ -4,6 +4,8 @@ node_modules/
 # build output
 web/dist/
 dist/
+.build/
+macos/TamaClodMenuBar/dist/
 
 # logs / debug
 *.log
