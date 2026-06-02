@@ -34,6 +34,9 @@
     "build": "npm run build:web && npm run build:server",
     "build:web": "vite build web",
     "build:server": "esbuild server/server.ts --bundle --platform=node --format=esm --target=node18 --packages=external --outfile=dist/server.mjs",
+    "mac:server": "tsx server/server.ts",
+    "mac:test": "swift test --package-path macos/TamaClodMenuBar",
+    "mac:app": "./script/build_and_run.sh",
     "start": "node dist/server.mjs",
     "typecheck": "tsc -p web/tsconfig.json && tsc -p tsconfig.json",
     "prepublishOnly": "npm run build"

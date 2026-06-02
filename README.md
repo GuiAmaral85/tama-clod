@@ -50,6 +50,107 @@ npm run build
 npm start            # open http://localhost:4321
 ```
 
+## macOS menu bar app prototype
+
+This repo also includes a local macOS SwiftUI prototype in
+`macos/TamaClodMenuBar`. It is a **menu-bar-only** companion: launching it adds
+a small TAMA CLOD status item to the macOS menu bar, starts the same local Node
+server used by the browser version, reads `/api/state` + `/api/stream`, and
+shows the pet in a native popover.
+
+The app is intentionally a local prototype for now. It does not install a login
+item, does not ship a signed release build, and does not send data anywhere.
+On macOS versions that support Liquid Glass, the popover uses native glass
+surfaces and glass button styles. Earlier macOS versions fall back to adaptive
+system materials.
+
+### macOS requirements
+
+- macOS 13+
+- Node 18+
+- Swift toolchain / Xcode command line tools
+- Claude Code installed and used at least once
+- Repo dependencies installed with `npm install` or `npm ci`
+
+### Build and open the app
+
+```bash
+git clone https://github.com/GuiAmaral85/tama-clod.git
+cd tama-clod
+npm install
+
+npm run mac:app
+```
+
+`npm run mac:app` builds the SwiftPM project, stages a local app bundle at
+`macos/TamaClodMenuBar/dist/TamaClodMenuBar.app`, and opens it.
+
+Because this is a menu-bar-only app, it does **not** appear in the Dock. Look
+for the TAMA CLOD status item in the menu bar and click it to open the popover.
+
+### Using the menu bar app
+
+- Click the menu bar item to open or close the popover.
+- The popover shows the live pet, current label, stage, energy, hunger, growth
+  tokens, and idle time.
+- Use **Refresh** to request a fresh `/api/state` snapshot.
+- Use **Quit** to close the app and stop its Node helper process.
+- The app starts `npm run mac:server` automatically on launch.
+- The helper server binds to `127.0.0.1:4321` by default and is stopped when the
+  app quits.
+
+You can verify the server while the app is running:
+
+```bash
+curl http://127.0.0.1:4321/api/state
+```
+
+### Notifications
+
+The macOS app watches the same state changes as the web UI and turns relevant
+milestones into notifications:
+
+- stage evolution
+- low energy
+- critical energy
+- energy recovery
+- high hunger
+- critical hunger
+- fainted state
+
+The default notification mode is **Animated popover**. In this mode, the app
+opens/highlights the native popover when a milestone happens. You can switch to
+**macOS notifications** from the popover; if system notification permission is
+denied or unavailable, the app falls back to the animated popover.
+
+### macOS development commands
+
+```bash
+npm run mac:server   # run only the local Node server used by the app
+npm run mac:test     # run Swift tests for the macOS core
+npm run mac:app      # build and open the local menu bar app bundle
+```
+
+The Swift package has two targets:
+
+- `TamaClodCore`: shared/testable logic for server state, SSE parsing, visual
+  mapping, milestone detection, formatting, repo-root resolution, and Node
+  helper lifecycle.
+- `TamaClodMenuBar`: AppKit + SwiftUI app target with `NSStatusItem`,
+  `NSPopover`, native pixel-art rendering, Liquid Glass popover surfaces,
+  settings, and notification delivery.
+
+### Troubleshooting
+
+- **No Dock icon:** expected. The prototype is menu-bar-only.
+- **No menu bar item:** run `npm run mac:app` again and check for build errors.
+- **Popover says disconnected:** confirm the server responds with
+  `curl http://127.0.0.1:4321/api/state`.
+- **Port conflict:** stop any previous `tama-clod` server or process using port
+  `4321`.
+- **macOS notifications do not appear:** enable notifications for the staged app
+  in System Settings, or use the default animated popover mode.
+
 ## Configuration
 
 The growth numbers, the energy cap, and the hunger timer live in

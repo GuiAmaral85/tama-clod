@@ -29,6 +29,10 @@ heavy lifting and the page only renders:
 - **Watch**: `chokidar` on the projects folder (fallback: re-poll every ~5s).
 - **Real-time**: **SSE** (Server-Sent Events) — server→client, no socket libs.
 - **Runtime dependency**: just `chokidar` (React/Vite/tsx/esbuild are dev-only).
+- **macOS prototype**: SwiftPM app under `macos/TamaClodMenuBar`. It is a
+  menu-bar-only SwiftUI/AppKit app that launches the Node server with
+  `npm run mac:server`, consumes `/api/state` and `/api/stream`, and renders a
+  native pixel pet popover.
 
 ## Folder structure
 
@@ -45,6 +49,10 @@ tama-clod/
 │  └─ src/App.tsx
 ├─ bin/
 │  └─ tama-clod.mjs      # `npx tama-clod` entry: starts the server, opens browser
+├─ macos/
+│  └─ TamaClodMenuBar/   # SwiftPM macOS menu bar prototype
+├─ script/
+│  └─ build_and_run.sh   # stages and opens local macOS .app bundle
 ├─ package.json
 ├─ HANDOFF.md
 └─ README.md
@@ -70,6 +78,19 @@ IPv6/IPv4 mismatch.
 - The state gallery is always visible; manual sliders live behind a "Demo"
   toggle.
 - PT/EN toggle, default EN, persisted in `localStorage`.
+
+## macOS prototype (`macos/TamaClodMenuBar`)
+
+- `TamaClodCore` contains testable contracts: `PetState`, SSE parsing, visual
+  mapping, milestone detection/deduplication, repo-root resolution, and the Node
+  helper launcher.
+- `TamaClodMenuBar` owns AppKit/SwiftUI lifecycle: accessory activation policy,
+  `NSStatusItem`, `NSPopover`, UserNotifications fallback, and the native
+  Canvas-based pixel pet. On macOS versions that support Liquid Glass, the
+  popover wraps related glass surfaces in one `GlassEffectContainer` and falls
+  back to adaptive system materials on older systems.
+- Notification modes are persisted in `UserDefaults`: animated popover by
+  default, or standard macOS notifications when authorized.
 
 ## Rules (`core/engine.ts`)
 
