@@ -1,4 +1,4 @@
-# 🥚 TAMA CLOD
+# 👾 TAMA CLOD
 
 A pixel-art Tamagotchi that lives off your **Claude Code** usage. The more you
 code with Claude Code, the more the little creature grows. But be careful: burn
