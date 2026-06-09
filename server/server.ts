@@ -275,7 +275,7 @@ export async function start(): Promise<{ url: string }> {
   // servidor preso só em IPv6.
   await new Promise<void>((ok) => {
     server.listen(PORT, "127.0.0.1", () => {
-      console.log(`\n  🥚 TAMA CLOD rodando em  http://localhost:${PORT}\n`);
+      console.log(`\n  👾 TAMA CLOD rodando em  http://localhost:${PORT}\n`);
       if (!existsSync(WEB_DIST)) {
         console.log("  (DEV) frontend pelo Vite:  http://localhost:5173");
         console.log("  (PROD) rode `npm run build` para servir o front daqui.\n");
